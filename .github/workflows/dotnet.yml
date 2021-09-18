@@ -18,7 +18,7 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Build Windows
-      run: dotnet publish -r win-x64
+      run: dotnet publish -c Release -r win-x64
     - name: Upload Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
