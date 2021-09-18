@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+	<TargetName>cim</TargetName>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <PublishSingleFile>true</PublishSingleFile>
+    <AssemblyName>cim</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="commanddotnet" Version="4.1.13" />
+    <PackageReference Include="CommandDotNet.NameCasing" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>

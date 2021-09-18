@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CIManager": {
+      "commandName": "Project",
+      "commandLineArgs": "init"
+    }
+  }
+}
