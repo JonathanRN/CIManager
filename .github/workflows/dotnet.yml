@@ -22,4 +22,4 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
-        path: /home/runner/work/CIManager/CIManager/CIManager/bin/Debug/net5.0/win-x64/publish/*.exe
+        path: /home/runner/work/CIManager/CIManager/CIManager/bin/Release/net5.0/win-x64/publish/*.exe
