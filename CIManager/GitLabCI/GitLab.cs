@@ -32,8 +32,7 @@ namespace CIManager.GitLabCI
 		[Command(Description = "Setups a pipeline for Unity projects.")]
 		public void Unity(IPrompter prompter, [Option(LongName = "use-defaults", ShortName = "u", Description = "Automatically use default settings?", BooleanMode = BooleanMode.Implicit)] bool useDefaults)
 		{
-			System.Console.WriteLine(useDefaults);
-			new Unity().Init(prompter, nameof(GitLab));
+			new Unity().Init(prompter, nameof(GitLab), useDefaults);
 		}
 
 		public static void ConstructYml(string path, Stages stages, Cache cache, BuildJob[] jobs)

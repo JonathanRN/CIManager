@@ -20,12 +20,16 @@ namespace CIManager
 		private const string PROJECT_VERSION = "ProjectVersion.txt";
 		private const string PLAYER_BUILD_GIST = @"https://gist.github.com/JonathanRN/d10d274c46d775fe9779d997d716ff81/raw/f08232d1c12ed00c9a00eff66d211912cbd2233f/PlayerBuild.cs";
 
-		public void Init(IPrompter prompter, string repositoryManager)
+		public void Init(IPrompter prompter, string repositoryManager, bool useDefaults)
 		{
 			this.repositoryManager = repositoryManager;
 			projectPath = Directory.GetCurrentDirectory();
-			projectPath = Helper.ShowPrompt(prompter, false, out bool cancelled, "Enter project location", projectPath);
-			if (cancelled) return;
+
+			if (!useDefaults)
+			{
+				projectPath = Helper.ShowPrompt(prompter, false, out bool cancelled, "Enter project location", projectPath);
+				if (cancelled) return;
+			}
 
 			version = GetUnityVersion(projectPath);
 			if (string.IsNullOrEmpty(version))
@@ -33,35 +37,42 @@ namespace CIManager
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("Invalid Unity project path.");
 				Console.ForegroundColor = ConsoleColor.Gray;
-				Init(prompter, repositoryManager);
+				Init(prompter, repositoryManager, useDefaults);
 				return;
 			}
 
-			version = Helper.ShowPrompt(prompter, false, out cancelled, "Enter Unity version", version);
-			if (cancelled) return;
-
-			while (!IsVersionValid(version))
+			if (!useDefaults)
 			{
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine("Invalid Unity version specified.");
-				Console.ForegroundColor = ConsoleColor.Gray;
-				version = GetUnityVersion(projectPath);
-				version = Helper.ShowPrompt(prompter, false, out cancelled, "Enter Unity version", version);
+				version = Helper.ShowPrompt(prompter, false, out bool cancelled, "Enter Unity version", version);
 				if (cancelled) return;
+
+				while (!IsVersionValid(version))
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine("Invalid Unity version specified.");
+					Console.ForegroundColor = ConsoleColor.Gray;
+					version = GetUnityVersion(projectPath);
+					version = Helper.ShowPrompt(prompter, false, out cancelled, "Enter Unity version", version);
+					if (cancelled) return;
+				}
 			}
 
 			AddBuildTarget(prompter);
 
 			if (jobs.Count <= 0) return;
 
-			string answer = Helper.ShowPrompt(prompter, true, out cancelled,
-				"A build script is necessary in order for Unity to know which platform to build. This file will be added to `Assets/Editor/Build`. Proceed?",
-				"Y", "N");
-			if (cancelled) return;
-			if (!answer.Equals("Y"))
+			if (!useDefaults)
 			{
-				return;
+				string answer = Helper.ShowPrompt(prompter, true, out bool cancelled,
+					"A build script is necessary in order for Unity to know which platform to build. This file will be added to `Assets/Editor/Build`. Proceed?",
+					"Y", "N");
+				if (cancelled) return;
+				if (!answer.Equals("Y"))
+				{
+					return;
+				}
 			}
+
 			DownloadBuildFile(PLAYER_BUILD_GIST);
 		}
 
