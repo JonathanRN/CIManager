@@ -1,5 +1,6 @@
 ﻿using CommandDotNet;
 using CommandDotNet.Prompts;
+using System;
 using System.IO;
 using System.Text;
 
@@ -22,6 +23,9 @@ namespace CIManager.GitLabCI
 			switch (output)
 			{
 				case "Unity":
+					Console.ForegroundColor = ConsoleColor.Yellow;
+					Console.WriteLine("Warning: variables UNITY_USERNAME, UNITY_PASSWORD and UNITY_SERIAL will need to be set into your GitLab's CI variables.\n");
+					Console.ForegroundColor = ConsoleColor.Gray;
 					Unity(prompter, false);
 					break;
 				default:
