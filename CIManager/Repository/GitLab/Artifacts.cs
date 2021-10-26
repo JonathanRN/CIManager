@@ -1,4 +1,4 @@
-﻿namespace CIManager.GitLabCI
+﻿namespace Jroynoel.CIManager.Repository.GitLab
 {
 	public class Artifacts
 	{

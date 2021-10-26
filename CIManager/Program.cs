@@ -1,7 +1,7 @@
 ﻿using CommandDotNet;
 using CommandDotNet.NameCasing;
 
-namespace CIManager
+namespace Jroynoel.CIManager
 {
 	public class Program
 	{

@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 
-namespace CIManager
+namespace Jroynoel.CIManager
 {
 	public static class Helper
 	{

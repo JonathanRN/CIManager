@@ -1,6 +1,6 @@
 ﻿using CommandDotNet;
 
-namespace CIManager
+namespace Jroynoel.CIManager
 {
 	[Command(Description = "Allows to easily setup Continuous Integration into a new or existing project.")]
 	public class Main

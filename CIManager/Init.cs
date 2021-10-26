@@ -1,8 +1,8 @@
-﻿using CIManager.GitLabCI;
-using CommandDotNet;
+﻿using CommandDotNet;
 using CommandDotNet.Prompts;
+using Jroynoel.CIManager.Repository.GitLab;
 
-namespace CIManager
+namespace Jroynoel.CIManager
 {
 	[Command(Description = "Initialize the setup of the CI configuration.")]
 	public class Init

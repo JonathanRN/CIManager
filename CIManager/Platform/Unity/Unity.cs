@@ -2,29 +2,31 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using CIManager.GitLabCI;
 using System.Collections.Generic;
 using System.Net;
 using System.Linq;
+using Jroynoel.CIManager.Repository.GitLab;
+using Jroynoel.CIManager.Repository.GitLab.Job;
 
-namespace CIManager
+namespace Jroynoel.CIManager.Platform.Unity
 {
 	public class Unity
 	{
 		private string projectPath;
 		private string version;
 		private string repositoryManager;
-		private readonly List<BuildJob> jobs = new List<BuildJob>();
+		private readonly List<UnityBuildJob> jobs = new List<UnityBuildJob>();
 
 		private const string PROJECT_SETTINGS = "ProjectSettings";
 		private const string PROJECT_VERSION = "ProjectVersion.txt";
 		private const string PLAYER_BUILD_GIST = @"https://gist.github.com/JonathanRN/d10d274c46d775fe9779d997d716ff81/raw/f08232d1c12ed00c9a00eff66d211912cbd2233f/PlayerBuild.cs";
 
-		public void Init(IPrompter prompter, string repositoryManager, bool useDefaults)
+		public void Init(IPrompter prompter, string repositoryManager, bool isPersonal, bool useDefaults)
 		{
 			this.repositoryManager = repositoryManager;
 			projectPath = Directory.GetCurrentDirectory();
 
+			// Ask project location
 			if (!useDefaults)
 			{
 				projectPath = Helper.ShowPrompt(prompter, false, out bool cancelled, "Enter project location", projectPath);
@@ -37,10 +39,11 @@ namespace CIManager
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("Invalid Unity project path.");
 				Console.ForegroundColor = ConsoleColor.Gray;
-				Init(prompter, repositoryManager, useDefaults);
+				Init(prompter, repositoryManager, isPersonal, useDefaults);
 				return;
 			}
 
+			// Ask Unity version
 			if (!useDefaults)
 			{
 				version = Helper.ShowPrompt(prompter, false, out bool cancelled, "Enter Unity version", version);
@@ -66,14 +69,14 @@ namespace CIManager
 				string answer = Helper.ShowPrompt(prompter, true, out bool cancelled,
 					"A build script is necessary in order for Unity to know which platform to build. This file will be added to `Assets/Editor/Build`. Proceed?",
 					"Y", "N");
+
 				if (cancelled) return;
-				if (!answer.Equals("Y"))
+
+				if (answer.Equals("Y"))
 				{
-					return;
+					DownloadBuildFile(PLAYER_BUILD_GIST);
 				}
 			}
-
-			DownloadBuildFile(PLAYER_BUILD_GIST);
 		}
 
 		private void AddBuildTarget(IPrompter prompter)
@@ -109,7 +112,7 @@ namespace CIManager
 			string dockerImage = $"unityci/editor:{version}-{dockerTarget.ToLower()}-0";
 
 			string script = GetScript(buildTarget);
-			BuildJob buildJob = new BuildJob(buildTarget, dockerImage, script, null); // todo: make user enter stage and tags?
+			UnityBuildJob buildJob = new UnityBuildJob(buildTarget, dockerImage, script, null); // todo: make user enter stage and tags?
 			jobs.Add(buildJob);
 
 			Console.WriteLine($"Build target {buildTarget} added.");
@@ -127,7 +130,6 @@ namespace CIManager
 				default:
 					break;
 			}
-
 		}
 
 		private string GetUnityVersion(string path)
