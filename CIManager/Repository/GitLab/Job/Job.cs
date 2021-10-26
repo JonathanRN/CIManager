@@ -4,26 +4,27 @@
 	{
 		protected string Name { get; set; }
 		protected string Image { get; set; }
-		protected string Script { get; set; }
+		protected Script Script { get; set; }
 		protected YMLArray Tags { get; set; }
 		protected Artifacts Artifacts { get; set; }
 
-		protected Job(string name, string image, string script)
+		protected Job(string name, string image)
 		{
 			Name = name;
 			Image = image;
-			Script = script;
+			Script = SetScript();
 		}
 
-		protected Job(string name, string image, string script, YMLArray tags, Artifacts artifacts)
+		protected Job(string name, string image, YMLArray tags, Artifacts artifacts)
 		{
 			Name = name;
 			Image = image;
-			Script = script;
+			Script = SetScript();
 			Tags = tags;
 			Artifacts = artifacts;
 		}
 
+		protected abstract Script SetScript();
 		public abstract override string ToString();
 	}
 }

@@ -1,7 +1,6 @@
 ﻿using CommandDotNet;
 using CommandDotNet.Prompts;
 using Jroynoel.CIManager.Platform.Unity;
-using Jroynoel.CIManager.Repository.GitLab.Job;
 using System;
 using System.IO;
 using System.Text;
@@ -54,7 +53,7 @@ namespace Jroynoel.CIManager.Repository.GitLab
 			new Unity().Init(prompter, nameof(GitLab), isPersonal, useDefaults);
 		}
 
-		public static void ConstructYml(string path, Stages stages, Cache cache, UnityBuildJob[] jobs)
+		public static void ConstructYml(string path, Stages stages, Cache cache, Job.Job[] jobs)
 		{
 			string yml = $"{stages}\n{cache}\n{string.Join("\n\n", (object[])jobs)}";
 

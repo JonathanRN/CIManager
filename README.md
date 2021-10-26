@@ -6,7 +6,7 @@ A Continuous Integration tool to easily integrate pipelines into applications.
 
 | Repository Manager  | Platform |
 | ------------- | ------------- |
-| GitLab  | Unity |
+| GitLab  | Unity<br/>Unity Personal |
 
 ## Usage
 

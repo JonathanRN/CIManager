@@ -15,7 +15,7 @@ namespace Jroynoel.CIManager.Platform.Unity
 		private string projectPath;
 		private string version;
 		private string repositoryManager;
-		private readonly List<UnityBuildJob> jobs = new List<UnityBuildJob>();
+		private readonly List<Job> jobs = new List<Job>();
 
 		private const string PROJECT_SETTINGS = "ProjectSettings";
 		private const string PROJECT_VERSION = "ProjectVersion.txt";
@@ -60,22 +60,31 @@ namespace Jroynoel.CIManager.Platform.Unity
 				}
 			}
 
-			AddBuildTarget(prompter);
-
-			if (jobs.Count <= 0) return;
-
-			if (!useDefaults)
+			if (!isPersonal)
 			{
-				string answer = Helper.ShowPrompt(prompter, true, out bool cancelled,
-					"A build script is necessary in order for Unity to know which platform to build. This file will be added to `Assets/Editor/Build`. Proceed?",
-					"Y", "N");
+				AddBuildTarget(prompter);
 
-				if (cancelled) return;
+				if (jobs.Count <= 0) return;
 
-				if (answer.Equals("Y"))
+				if (!useDefaults)
 				{
-					DownloadBuildFile(PLAYER_BUILD_GIST);
+					string answer = Helper.ShowPrompt(prompter, true, out bool cancelled,
+						"A build script is necessary in order for Unity to know which platform to build. This file will be added to `Assets/Editor/Build`. Proceed?",
+						"Y", "N");
+
+					if (cancelled) return;
+
+					if (answer.Equals("Y"))
+					{
+						DownloadBuildFile(PLAYER_BUILD_GIST);
+					}
 				}
+
+			}
+			else
+			{
+				jobs.Add(new UnityActivationFileJob(version));
+				ConstructYML(true);
 			}
 		}
 
@@ -89,7 +98,7 @@ namespace Jroynoel.CIManager.Platform.Unity
 				return;
 			}
 
-			if (jobs.Select(x => x.BuildTarget).Contains(buildTarget))
+			if (jobs.Select(x => (x as UnityBuildJob).BuildTarget).Contains(buildTarget))
 			{
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine($"This project already contains build target: {buildTarget}");
@@ -111,8 +120,7 @@ namespace Jroynoel.CIManager.Platform.Unity
 
 			string dockerImage = $"unityci/editor:{version}-{dockerTarget.ToLower()}-0";
 
-			string script = GetScript(buildTarget);
-			UnityBuildJob buildJob = new UnityBuildJob(buildTarget, dockerImage, script, null); // todo: make user enter stage and tags?
+			UnityBuildJob buildJob = new UnityBuildJob(buildTarget, dockerImage, null); // todo: make user enter stage and tags?
 			jobs.Add(buildJob);
 
 			Console.WriteLine($"Build target {buildTarget} added.");
@@ -122,7 +130,7 @@ namespace Jroynoel.CIManager.Platform.Unity
 			{
 				case "N":
 					Console.WriteLine($"You can always add build targets later by doing `cim add {repositoryManager.ToLower()} unity`.\n");
-					ConstructYML();
+					ConstructYML(false); // TODO: change for adding jobs later
 					break;
 				case "Y":
 					AddBuildTarget(prompter);
@@ -158,20 +166,6 @@ namespace Jroynoel.CIManager.Platform.Unity
 			return regex.IsMatch(version);
 		}
 
-		private string GetScript(string buildTarget)
-		{
-			return $"${{UNITY_EXECUTABLE:-xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' unity-editor}}" +
-				$" -username \"${{UNITY_USERNAME}}\"" +
-				$" -password \"${{UNITY_PASSWORD}}\"" +
-				$" -serial \"${{UNITY_SERIAL}}\"" +
-				$" -buildTarget {buildTarget}" +
-				$" -executeMethod PlayerBuild.Build{buildTarget}" +
-				$" -batchmode" +
-				$" -quit" +
-				$" -logFile /dev/stdout" +
-				$" -projectPath.";
-		}
-
 		private void DownloadBuildFile(string path)
 		{
 			string output = projectPath + "/Assets/Editor/Build/";
@@ -183,12 +177,23 @@ namespace Jroynoel.CIManager.Platform.Unity
 			Console.WriteLine($"Downloaded {PLAYER_BUILD_GIST} to {output + "PlayerBuild.cs"}\n");
 		}
 
-		private void ConstructYML()
+		private void ConstructYML(bool isPersonal)
 		{
-			Stages stages = new Stages(new string[] { "Build" });
+			Stages stages = new Stages(new string[] { isPersonal ? "Activation" : "Build" });
 			Cache cache = new Cache(new string[] { "Library/" });
 
 			GitLab.ConstructYml(projectPath, stages, cache, jobs.ToArray());
+
+			if (isPersonal)
+			{
+				Console.ForegroundColor = ConsoleColor.Green;
+				Console.WriteLine("An activation job has been added.");
+				Console.WriteLine("1. Run the pipeline once.");
+				Console.WriteLine("2. Download the created artifact and upload it to https://license.unity3d.com/manual ");
+				Console.WriteLine("3. Put the new downloaded .ulf file from the website at the root of your project.");
+				Console.WriteLine("4. If necessary, rename the file to match the one specified in `.gitlab-ci.yml`.");
+				Console.ForegroundColor = ConsoleColor.Gray;
+			}
 		}
 	}
 }
